@@ -34,7 +34,6 @@ all_data[is.na(all_data$Replicate),] <- 1
 
 write_csv(all_data, 'tidy_omics.csv')
 
-test <- all_data %>%
-  group_by(c('Time', 'Replicate')) %>%
+
   
   

@@ -6,7 +6,9 @@ library('ggrepel')
 
 data <- 
   read_csv('data/150618_SGA/SGAdata.csv') %>%
-  filter(is.na(cdc2_Interaction.Warning.Flags))
+  filter(is.na(cdc2_Interaction.Warning.Flags)) %>%
+  select(Systematic.Name, cdc2_Interaction.Value)
+
 
 p <- ggplot(data,aes(cdc2_Interaction.Value))
 p + geom_histogram(bins = 50, aes(y = ..density..), color = 'black', fill = 'white') + 
@@ -50,10 +52,23 @@ p <- ggplot(annot_sig, aes(y = cdc2_Interaction.Value, x = id, fill = id, label 
 p + geom_point() + geom_label_repel()
 
 
-###Let's do ups and downs
+###Let's do ups and downs#######
 up_data <- filter(data, cdc2_Interaction.Value > interaction_cutoff)
 down_data <- filter(data, cdc2_Interaction.Value < -interaction_cutoff)
 
 cl <- compareCluster(list(up = up_data$Systematic.Name, down = down_data$Systematic.Name), fun = 'enricher', TERM2GENE = go_db$term2gene, TERM2NAME = go_db$term2name)
 dotplot(cl)
 write_csv(as.data.frame(cl), path = 'data/up_down_enrichment.csv')
+
+###########Comparison with second replicate#############
+data2 <- 
+  read_csv('data/SGAdata_rep2.csv') %>%
+  filter(is.na(cdc2_Interaction.Warning.Flags)) %>%
+  select(Systematic.Name, cdc2_Interaction.Value)
+
+all_data <- inner_join(data, data2, by = 'Systematic.Name', suffix = c('_Rep1','_Rep2'))
+
+p <- ggplot(all_data, aes(x = cdc2_Interaction.Value_Rep1, y = cdc2_Interaction.Value_Rep2))
+p + geom_point() + geom_smooth(method = 'lm')
+#My replicates are not replicates, what do
+
